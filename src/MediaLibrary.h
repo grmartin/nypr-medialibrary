@@ -38,6 +38,7 @@ class Artist;
 class Media;
 class Movie;
 class Show;
+class Mountpoint;
 
 class MediaLibrary : public IMediaLibrary
 {
@@ -57,6 +58,8 @@ class MediaLibrary : public IMediaLibrary
 
         virtual FolderPtr folder( const std::string& path ) override;
         virtual bool deleteFolder( FolderPtr folder ) override;
+        std::shared_ptr<Mountpoint> mountpoint( const std::string& uuid );
+        std::shared_ptr<Mountpoint> addMountpoint( const std::string& uuid, bool isRemovable );
 
         virtual LabelPtr createLabel( const std::string& label ) override;
         virtual bool deleteLabel( LabelPtr label ) override;
