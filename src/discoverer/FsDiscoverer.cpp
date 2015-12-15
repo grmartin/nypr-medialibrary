@@ -67,10 +67,7 @@ bool FsDiscoverer::discover( const std::string &entryPoint )
         return false;
     }
     auto blist = blacklist();
-    auto it = std::find_if( begin( blist ), end( blist ), [&fsDir]( const std::shared_ptr<Folder>& f ) {
-        return f->path() == fsDir->path();
-    });
-    if ( it != end( blist ) )
+    if ( isBlacklisted( fsDir->path(), blist ) == true )
         return false;
     // Force <0> as lastModificationDate, so this folder is detected as outdated
     // by the modification checking code
@@ -137,10 +134,7 @@ bool FsDiscoverer::checkSubfolders( fs::IDirectory* folder, Folder* parentFolder
         if ( it == end( subFoldersInDB ) )
         {
             // Check if it is blacklisted
-            auto it = std::find_if( begin( blacklist ), end( blacklist ), [subFolderPath](const std::shared_ptr<Folder>& f) {
-                return f->path() == subFolderPath;
-            });
-            if ( it != end( blacklist ) )
+            if ( isBlacklisted( subFolderPath, blacklist ) == true )
             {
                 LOG_INFO( "Ignoring blacklisted folder: ", subFolderPath );
                 continue;
@@ -216,4 +210,11 @@ std::vector<std::shared_ptr<Folder> > FsDiscoverer::blacklist() const
 {
     static const std::string req = "SELECT * FROM " + policy::FolderTable::Name + " WHERE is_blacklisted = 1";
     return sqlite::Tools::fetchAll<Folder, Folder>( m_dbConn, req );
+}
+
+bool FsDiscoverer::isBlacklisted(const std::string& path, const std::vector<std::shared_ptr<Folder>>& blacklist ) const
+{
+    return std::find_if( begin( blacklist ), end( blacklist ), [&path]( const std::shared_ptr<Folder>& f ) {
+        return path == f->path();
+    }) != end( blacklist );
 }
